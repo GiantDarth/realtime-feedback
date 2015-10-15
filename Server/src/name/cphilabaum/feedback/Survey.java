@@ -36,8 +36,12 @@ public class Survey
         entries = new ArrayList<>();
     }
 
-    public void addEntry(Entry entry)
+    public void addEntry(Entry entry) throws InvalidEntryNameException
     {
+        if(entry.getName().contains("\""))
+        {
+            throw new InvalidEntryNameException("Entry name cannot contain \"'s.");
+        }
         entries.add(entry);
     }
 

@@ -63,5 +63,9 @@ public class Entry
     public void downVotes()
     {
         this.votes -= 1;
+        if(this.votes < 0)
+        {
+            this.votes = 0;
+        }
     }
 }

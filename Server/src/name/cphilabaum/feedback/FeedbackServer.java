@@ -97,52 +97,47 @@ public class FeedbackServer extends WebSocketServer
     @Override
     public void onMessage(WebSocket conn, String message)
     {
-        String[] components = message.split(" ");
-        String command = components[0];
-        String arg = components[1];
-        switch(components[0])
+        try
         {
-            case("ADD"):
-                try
-                {
-                    updateAdd(new Entry(arg));
-                }
-                catch(EntryAlreadyExistsException e)
-                {
-                    conn.send("Entry already exists.");
-                }
-
-                break;
-            case("UP"):
-                try
-                {
+            String[] components = parseMessage(message);
+            String command = components[0];
+            String arg = components[1];
+            switch(command)
+            {
+                case("ADD"):
+                    if(!arg.startsWith("\"") || !arg.endsWith("\""))
+                    {
+                        throw new IllegalArgumentException("Argument does not begin or end with \".");
+                    }
+                    String name = arg.substring(1,arg.length()-1);
+                    updateAdd(new Entry(name));
+                    break;
+                case("UP"):
                     updateUp(Integer.parseInt(arg));
-                }
-                catch(NumberFormatException e)
-                {
-                    conn.send("Index not valid.");
-                }
-                catch(IndexOutOfBoundsException e)
-                {
-                    conn.send("Index does not exist.");
-                }
-
-                break;
-            case("DOWN"):
-                try
-                {
+                    break;
+                case("DOWN"):
                     updateDown(Integer.parseInt(arg));
-                }
-                catch(NumberFormatException e)
-                {
-                    conn.send("Index not valid.");
-                }
-                catch(IndexOutOfBoundsException e)
-                {
-                    conn.send("Index does not exist.");
-                }
-
-                break;
+                    break;
+                default:
+                    conn.send("Invalid command.");
+                    break;
+            }
+        }
+        catch(EntryAlreadyExistsException e)
+        {
+            conn.send("Entry already exists.");
+        }
+        catch(NumberFormatException e)
+        {
+            conn.send("Index not valid.");
+        }
+        catch(IndexOutOfBoundsException e)
+        {
+            conn.send("Index does not exist.");
+        }
+        catch(InvalidEntryNameException | IllegalArgumentException e)
+        {
+            conn.send(e.getMessage());
         }
     }
 
@@ -172,7 +167,7 @@ public class FeedbackServer extends WebSocketServer
         sendToAll("DOWN " + Integer.toString(index));
     }
 
-    private void updateAdd(Entry entry) throws EntryAlreadyExistsException
+    private void updateAdd(Entry entry) throws EntryAlreadyExistsException, InvalidEntryNameException
     {
         if(survey.contains(entry.getName()))
         {
@@ -201,5 +196,16 @@ public class FeedbackServer extends WebSocketServer
     protected Survey getSurvey()
     {
         return survey;
+    }
+
+    private String[] parseMessage(String message)
+    {
+        String[] components = message.split(" ",2);
+        if(components.length < 2)
+        {
+            throw new IllegalArgumentException("Commands need at least 2 arguments.");
+        }
+
+        return components;
     }
 }
