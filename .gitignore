@@ -1,0 +1,9 @@
+# Intellij Idea files
+.idea/
+
+# Build
+out/
+build/
+
+# Intellij Project file
+*.iml
