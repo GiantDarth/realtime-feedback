@@ -109,6 +109,10 @@ public class FeedbackServer extends WebSocketServer
                     {
                         throw new IllegalArgumentException("Argument does not begin or end with \".");
                     }
+                    if(MAX_ENTRIES == survey.getEntries().size())
+                    {
+                        throw new EntryLimitExceededException();
+                    }
                     String name = arg.substring(1,arg.length()-1);
                     updateAdd(new Entry(name));
                     break;
@@ -135,7 +139,7 @@ public class FeedbackServer extends WebSocketServer
         {
             conn.send("Index does not exist.");
         }
-        catch(InvalidEntryNameException | IllegalArgumentException e)
+        catch(InvalidEntryNameException | IllegalArgumentException | EntryLimitExceededException e)
         {
             conn.send(e.getMessage());
         }
