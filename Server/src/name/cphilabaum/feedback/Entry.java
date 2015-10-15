@@ -31,8 +31,13 @@ public class Entry
 
     public Entry(String name)
     {
+        this(name, 0);
+    }
+
+    public Entry(String name, int votes)
+    {
         this.name = name;
-        this.votes = 0;
+        this.votes = votes;
     }
 
     public String getName()

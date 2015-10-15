@@ -28,6 +28,8 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +38,46 @@ public class FeedbackServer extends WebSocketServer
 {
     private Survey survey;
     final public int MAX_ENTRIES;
+
+    /**
+     * Starts the server selectorthread that binds to the currently set port number and
+     * listeners for WebSocket connection requests. Creates a fixed thread pool with the size {@link WebSocketServer#DECODERS}<br>
+     * May only be called once.
+     * <p>
+     * Alternatively you can call {@link WebSocketServer#run()} directly.
+     *
+     * @throws IllegalStateException
+     */
+    @Override
+    public void start()
+    {
+        SurveyFile file = new SurveyFile();
+
+        try
+        {
+            this.survey = file.read();
+        }
+        catch (IOException e)
+        {
+//            e.printStackTrace();
+            System.err.println(e.getMessage());
+            this.survey = new Survey();
+        }
+        catch (MalformedFileException e)
+        {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+        super.start();
+    }
+
+    @Override
+    public void stop() throws IOException, InterruptedException
+    {
+        super.stop();
+        SurveyFile file = new SurveyFile();
+        file.write(this.survey);
+    }
 
     /**
      * Creates a WebSocketServer that will attempt to bind/listen on the given <var>address</var>.
