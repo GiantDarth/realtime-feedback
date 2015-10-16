@@ -33,8 +33,27 @@ public class Main
 {
     public static void main(String[] args) throws IOException, InterruptedException
     {
-        final int PORT = 17772;
-        FeedbackServer server = new FeedbackServer(new InetSocketAddress(PORT), 30);
+        int PORT = 0;
+        FeedbackServer server = null;
+        try
+        {
+            if (args.length != 2)
+            {
+                throw new IllegalArgumentException();
+            }
+            PORT = Integer.parseInt(args[0]);
+            server = new FeedbackServer(new InetSocketAddress(PORT), Integer.parseInt(args[1]));
+        }
+        catch (NumberFormatException e)
+        {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
+        catch (IllegalArgumentException e)
+        {
+            System.out.println("Usage: {port} {maxEntries}");
+            System.exit(-1);
+        }
         server.start();
         System.out.printf("Server started on port %d...\n", PORT);
 
