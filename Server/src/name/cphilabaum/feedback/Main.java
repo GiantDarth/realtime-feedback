@@ -33,8 +33,8 @@ public class Main
 {
     public static void main(String[] args) throws IOException, InterruptedException
     {
-        final int PORT = 17776;
-        FeedbackServer server = new FeedbackServer(new InetSocketAddress(PORT), 2);
+        final int PORT = 17772;
+        FeedbackServer server = new FeedbackServer(new InetSocketAddress(PORT), 30);
         server.start();
         System.out.printf("Server started on port %d...\n", PORT);
 

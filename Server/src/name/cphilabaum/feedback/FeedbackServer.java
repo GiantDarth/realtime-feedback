@@ -104,13 +104,15 @@ public class FeedbackServer extends WebSocketServer
     {
         for(int i = 0; i < survey.getEntries().size(); i++)
         {
-            conn.send(String.format("ADD \"%s\" %d", survey.getEntry(i).getName(), i));
+            conn.send(String.format("ADD \"%s\" %d %d", survey.getEntry(i).getName(), i,
+                    survey.getEntry(i).getVotes()));
         }
 
-        conn.send("HELP:");
+        conn.send("HELP");
         conn.send("ADD [name] - Adds a survey entry.");
         conn.send("UP [name] - Ups an entry's vote by one.");
         conn.send("DOWN [name] - Downs an entry's vote by one.");
+        conn.send("UNHELP");
     }
 
     /**
@@ -220,7 +222,7 @@ public class FeedbackServer extends WebSocketServer
 
         survey.addEntry(entry);
         int index = survey.getIndex(entry.getName());
-        sendToAll(String.format("ADD \"%s\" %d", entry.getName(), index));
+        sendToAll(String.format("ADD \"%s\" %d %d", entry.getName(), index, entry.getVotes()));
     }
 
     protected void updateRemove(int index) throws IndexOutOfBoundsException
