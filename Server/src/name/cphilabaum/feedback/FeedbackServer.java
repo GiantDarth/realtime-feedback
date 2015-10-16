@@ -102,12 +102,10 @@ public class FeedbackServer extends WebSocketServer
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake)
     {
-        conn.send("START");
         for(int i = 0; i < survey.getEntries().size(); i++)
         {
             conn.send(String.format("ADD \"%s\" %d", survey.getEntry(i).getName(), i));
         }
-        conn.send("STOP");
 
         conn.send("HELP:");
         conn.send("ADD [name] - Adds a survey entry.");
