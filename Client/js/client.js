@@ -1,15 +1,3 @@
-// http://stackoverflow.com/a/20598914
-String.prototype.nthIndexOf = function(pattern, n) {
-    var i = -1;
-
-    while (n-- && i++ < this.length) {
-        i = this.indexOf(pattern, i);
-        if (i < 0) break;
-    }
-
-    return i;
-}
-
 var Client = function(url, ctx) {
 	this.websocket = new WebSocket(url);
 	this.ids = []
@@ -58,7 +46,7 @@ var Client = function(url, ctx) {
 					var secondToLast = data.substring(0,lastIndex).lastIndexOf(" ");
 					// Exclude the name's quotation marks.
 					parse.args.push(data.substring(index+2, secondToLast-1));
-					parse.args.push(data.substring(secondToLast+1,lastIndex));
+					parse.args.push(data.substring(secondToLast+1, lastIndex));
 					parse.args.push(data.substring(lastIndex+1));
 					break;
 				case 'REMOVE':
