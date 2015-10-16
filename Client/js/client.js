@@ -1,6 +1,10 @@
-var Client = function(url, ctx) {
+var Client = function(url, canvas, btn, input) {
 	this.websocket = new WebSocket(url);
-	this.ids = []
+	this.names = [];
+	this.ids = [];
+	this.canvas = canvas;
+	this.btn = btn;
+	this.input = input;
 	this.data = {
 		labels: [],
 		datasets: [
@@ -16,14 +20,76 @@ var Client = function(url, ctx) {
 	}
 	this.options = {
 		scaleBeginAtZero: true,
+		scaleStartValue: -1,
 		scaleShowGridLines: false,
 		responsive: true,
 		maintainAspectRatio: false
 	}
-	this.barChart = new Chart(ctx).Bar(this.data, this.options);
+	this.barChart = new Chart(this.canvas.getContext("2d")).Bar(this.data, this.options);
+	// Use custom removeData atIndex to remove the data at an index.
+	this.barChart.removeData = function(atIndex) {
+		this.scale.xLabels.splice(atIndex, 1);
+		this.scale.valuesCount--;
+		this.scale.fit();
+
+		// Then re-render the chart.
+		Chart.helpers.each(this.datasets,function(dataset){
+			dataset.bars.splice(atIndex, 1);
+		}, this);
+
+		this.update();
+	}
 	this.ignore = 0;
 
- 	this.update = function() {
+	canvas.ondblclick = function(event) {
+		var activeBar = self.barChart.getBarsAtEvent(event)[0];
+		if(!activeBar)
+		{
+			return;
+		}
+		var index = self.names.indexOf(activeBar.label);
+		self.websocket.send("UP " + self.ids[index]);
+	}
+
+	this.btn.onclick = function(event) {
+		var name = self.input.value;
+		if(!name) { return; }
+		if(name.indexOf('\"') >= 0)
+		{
+			window.alert('Value cannot contain quotes.')
+			return;
+		}
+		for(n in self.names)
+		{
+			if(self.names[n].toUpperCase() == name.toUpperCase())
+			{
+				window.alert('\"' + name + '\" is already used.')
+				return;
+			}
+		}
+		self.websocket.send('ADD \"' + name + '\"');
+	}
+
+	this.canvas.ondragstart = function(event) {
+		var img = document.createElement('img');
+		img.style.opacity = 0;
+		event.dataTransfer.setDragImage(img, 0, 0);
+
+		var activeBar = self.barChart.getBarsAtEvent(event)[0];
+		if(!activeBar)
+		{
+			return;
+		}
+		var index = self.names.indexOf(activeBar.label);
+		if(self.barChart.datasets[0].bars[index].value <= 0)
+		{
+			return;
+		}
+
+		self.websocket.send("DOWN " + self.ids[index]);
+	}
+
+	this.update = function() {
 		this.barChart.update();
 	}
 
@@ -74,14 +140,15 @@ var Client = function(url, ctx) {
 				var id = parseInt(parse.args[1]);
 				var votes = parseInt(parse.args[2]);
 				self.ids.push(id);
+				self.names.push(name);
 				self.barChart.addData([votes], name);
 				// self.update();
 				break;
 			case 'REMOVE':
 				var index = self.ids.indexOf(parseInt(parse.args[0]));
-				self.entries.splice(index, 1);
-				self.barChart.removeData(id);
-				// self.update();
+				self.ids.splice(index, 1);
+				self.names.splice(index, 1);
+				self.barChart.removeData(index);
 				break;
 			case 'UP':
 				var index = self.ids.indexOf(parseInt(parse.args[0]));

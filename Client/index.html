@@ -5,7 +5,11 @@
 	</head>
 
 	<body>
-		<canvas id="myChart" width="400" height="400"></canvas>
+		<div class="chart-container">
+			<canvas draggable="true" id="myChart" width="400" height="400"></canvas>
+			<button id='entryBtn'>Add Entry</button>
+			<input type="text" id='entryInput'></input>
+		</div>
 
 		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js"></script> -->
@@ -14,8 +18,10 @@
 		<!--<script src="js/Chart.HorizontalBar.js"></script>-->
 		<script src="js/client.js"></script>
 		<script>
-			var ctx = $("#myChart").get(0).getContext("2d");
-			var client = new Client("ws://localhost:17776", ctx);
+			var canvas = $("#myChart").get(0);
+			var btn = $("#entryBtn").get(0);
+			var input = $("#entryInput").get(0);
+			var client = new Client("ws://localhost:17772", canvas, btn, input);
 		</script>
 	</body>
 </html>
